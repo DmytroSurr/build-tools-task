@@ -36,4 +36,28 @@ tasks.withType<KotlinCompile> {
 
 
 // Frontend build tasks for Vite + React + TypeScript
-<your code here>
+
+tasks.register<Exec>("npmInstall") {
+    workingDir = file("ui")
+    commandLine = listOf("npm", "install")
+}
+
+tasks.register<Exec>("compileUi") {
+    workingDir = file("ui")
+    commandLine = listOf("npm", "run", "build")
+    dependsOn("npmInstall")
+}
+
+tasks.register<Copy>("copyUi") {
+    from("ui/dist")
+    into("src/main/resources/static")
+    dependsOn("compileUi")
+}
+
+tasks.named<ProcessResources>("processResources") {
+    dependsOn("copyUi")
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    dependsOn("copyUi")
+}
